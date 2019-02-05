@@ -53,7 +53,8 @@ class Notepad(Gtk.Window):
 
         self.textview = Gtk.TextView()
         self.statusbar = Gtk.Statusbar()
-        self.statusbar.push(0, "Ctrl+S (save), Ctrl+Q (close), Ctrl+D (del-line)")
+        self.statusbar.push(
+            0, "Ctrl+S (save), Ctrl+Q (close), Ctrl+D (del-line)")
 
         self.create_keybinds()
         self.create_layout()
@@ -99,8 +100,10 @@ class Notepad(Gtk.Window):
         self.add_accel_group(save_group)
 
         edit_group = Gtk.AccelGroup()
-        edit_group.connect(d_key, d_mod, Gtk.AccelFlags.LOCKED, self.delete_line)
-        edit_group.connect(a_key, a_mod, Gtk.AccelFlags.LOCKED, self.select_all)
+        edit_group.connect(
+            d_key, d_mod, Gtk.AccelFlags.LOCKED, self.delete_line)
+        edit_group.connect(
+            a_key, a_mod, Gtk.AccelFlags.LOCKED, self.select_all)
         self.add_accel_group(edit_group)
 
     def undo(self, *args):
@@ -140,7 +143,8 @@ class Notepad(Gtk.Window):
             with codecs.open(self.location, "r", encoding="utf-8") as f:
                 textbuffer.set_text(f.read())
         except IOError as e:
-            log.error("Notepad: Could not read blocklist. Creating new one. Msg: {}".format(e))
+            log.error(
+                "Notepad: Could not read blocklist. Creating new one. Msg: {}".format(e))
             with codecs.open(self.location, "w", encoding="utf-8"):
                 textbuffer.set_text("")
         self.set_title(self.location)
@@ -264,7 +268,8 @@ class BlockifyUI(Gtk.Window):
 
         self.menu.show_all()
 
-        self.menu.popup(None, None, None, self.status_icon, event_button, event_time)
+        self.menu.popup(None, None, None, self.status_icon,
+                        event_button, event_time)
 
     def create_labels(self):
         self.albumlabel = Gtk.Label()
@@ -278,8 +283,10 @@ class BlockifyUI(Gtk.Window):
 
     def create_interlude_player(self):
         interludelabel = "Disable" if self.b.use_interlude_music else "Enable"
-        self.toggle_interlude_btn = Gtk.Button(interludelabel + " InterludePlayer")
-        self.toggle_interlude_btn.connect("clicked", self.on_toggle_interlude_btn)
+        self.toggle_interlude_btn = Gtk.Button(
+            interludelabel + " InterludePlayer")
+        self.toggle_interlude_btn.connect(
+            "clicked", self.on_toggle_interlude_btn)
         self.prev_interlude_btn = Gtk.Button()
         self.prev_interlude_btn.set_image(self.prev_img)
         self.prev_interlude_btn.connect("clicked", self.on_prev_interlude_btn)
@@ -296,7 +303,8 @@ class BlockifyUI(Gtk.Window):
         self.shuffle_interludes_btn = Gtk.Button()
         self.shuffle_interludes_btn.set_image(self.shuffle_img)
         self.shuffle_interludes_btn.set_tooltip_text("Shuffle")
-        self.shuffle_interludes_btn.connect("clicked", self.on_shuffle_interludes_btn)
+        self.shuffle_interludes_btn.connect(
+            "clicked", self.on_shuffle_interludes_btn)
 
         self.interlude_label = Gtk.Label()
         self.interlude_label.set_width_chars(26)
@@ -304,12 +312,16 @@ class BlockifyUI(Gtk.Window):
         self.autoresume_chk = Gtk.CheckButton("Autoresume")
         self.autoresume_chk.connect("clicked", self.on_autoresume)
 
-        self.interlude_slider = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 0.1)
+        self.interlude_slider = Gtk.Scale.new_with_range(
+            Gtk.Orientation.HORIZONTAL, 0, 100, 0.1)
         self.interlude_slider.set_sensitive(False)
-        self.interlude_slider.connect("value-changed", self.on_interlude_slider_change)
+        self.interlude_slider.connect(
+            "value-changed", self.on_interlude_slider_change)
 
-        self.b.player.bus.connect("message::tag", self.on_interlude_tag_changed)
-        self.b.player.player.connect("audio-changed", self.on_interlude_audio_changed)
+        self.b.player.bus.connect(
+            "message::tag", self.on_interlude_tag_changed)
+        self.b.player.player.connect(
+            "audio-changed", self.on_interlude_audio_changed)
 
     def create_buttons(self):
         self.toggle_play_btn = Gtk.Button("Play/Pause")
@@ -393,7 +405,8 @@ class BlockifyUI(Gtk.Window):
         self.add(main_window)
 
     def set_states(self):
-        checkboxes = [self.autodetect_chk, self.automute_chk, self.autohide_cover_chk, self.autoresume_chk]
+        checkboxes = [self.autodetect_chk, self.automute_chk,
+                      self.autohide_cover_chk, self.autoresume_chk]
         values = [util.CONFIG["general"]["autodetect"], util.CONFIG["general"]["automute"],
                   util.CONFIG["gui"]["autohide_cover"], util.CONFIG["interlude"]["autoresume"]]
 
@@ -414,13 +427,15 @@ class BlockifyUI(Gtk.Window):
         Gtk.main()
 
     def start_main_loops(self):
-        GObject.timeout_add(self.b.spotify_refresh_interval, self.b.refresh_spotify_process_state)
+        GObject.timeout_add(self.b.spotify_refresh_interval,
+                            self.b.refresh_spotify_process_state)
         # Start and loop the main update routine once every X ms.
         # To influence responsiveness or CPU usage, decrease/increase self.update_interval.
         GObject.timeout_add(self.update_interval, self.update)
         if self.b.autoplay:
             # Delay autoplayback until self.spotify_is_playing was called at least once.
-            GObject.timeout_add(self.update_interval + 100, self.b.start_autoplay)
+            GObject.timeout_add(self.update_interval +
+                                100, self.b.start_autoplay)
 
         log.info("Blockify-UI started.")
 
@@ -478,13 +493,19 @@ class BlockifyUI(Gtk.Window):
 
         signal.signal(signal.SIGRTMIN, self.signal_prev_received)  # 34
         signal.signal(signal.SIGRTMIN + 1, self.signal_next_received)  # 35
-        signal.signal(signal.SIGRTMIN + 2, self.signal_playpause_received)  # 35
-        signal.signal(signal.SIGRTMIN + 3, self.signal_toggle_block_received)  # 37
+        signal.signal(signal.SIGRTMIN + 2,
+                      self.signal_playpause_received)  # 35
+        signal.signal(signal.SIGRTMIN + 3,
+                      self.signal_toggle_block_received)  # 37
 
-        signal.signal(signal.SIGRTMIN + 10, self.signal_prev_interlude_received)  # 44
-        signal.signal(signal.SIGRTMIN + 11, self.signal_next_interlude_received)  # 45
-        signal.signal(signal.SIGRTMIN + 12, self.signal_playpause_interlude_received)  # 46
-        signal.signal(signal.SIGRTMIN + 13, self.signal_toggle_autoresume_received)  # 47
+        signal.signal(signal.SIGRTMIN + 10,
+                      self.signal_prev_interlude_received)  # 44
+        signal.signal(signal.SIGRTMIN + 11,
+                      self.signal_next_interlude_received)  # 45
+        signal.signal(signal.SIGRTMIN + 12,
+                      self.signal_playpause_interlude_received)  # 46
+        signal.signal(signal.SIGRTMIN + 13,
+                      self.signal_toggle_autoresume_received)  # 47
 
     def show_about_dialogue(self, widget):
         about = Gtk.AboutDialog()
@@ -599,7 +620,8 @@ class BlockifyUI(Gtk.Window):
                 cover_file = self.get_cover_art()
                 if cover_file and self.previous_cover_file != cover_file:
                     pixbuf = GdkPixbuf.Pixbuf.new_from_file(cover_file)
-                    scaled_buf = pixbuf.scale_simple(195, 195, GdkPixbuf.InterpType.BILINEAR)
+                    scaled_buf = pixbuf.scale_simple(
+                        195, 195, GdkPixbuf.InterpType.BILINEAR)
                     self.coverimage.set_from_pixbuf(scaled_buf)
                     self.previous_cover_file = cover_file
                 if self.autohide_cover:
@@ -626,11 +648,9 @@ class BlockifyUI(Gtk.Window):
     def update_icons(self):
         if self.b.found and not self.statusicon_found:
             self.set_icon_from_file(self.red_icon_file)
-            self.status_icon.set_from_pixbuf(self.red_icon_buf)
             self.statusicon_found = True
         elif not self.b.found and self.statusicon_found:
             self.set_icon_from_file(self.blue_icon_file)
-            self.status_icon.set_from_pixbuf(self.blue_icon_buf)
             self.statusicon_found = False
 
     def update_slider(self):
@@ -646,16 +666,22 @@ class BlockifyUI(Gtk.Window):
             return False
 
         try:
-            nanosecs = self.b.player.player.query_position(self.b.player.Gst.Format.TIME)[1]
-            duration_nanosecs = self.b.player.player.query_duration(self.b.player.Gst.Format.TIME)[1]
+            nanosecs = self.b.player.player.query_position(
+                self.b.player.Gst.Format.TIME)[1]
+            duration_nanosecs = self.b.player.player.query_duration(
+                self.b.player.Gst.Format.TIME)[1]
 
             # Block seek handler so we don't seek when we set_value().
-            self.interlude_slider.handler_block_by_func(self.on_interlude_slider_change)
+            self.interlude_slider.handler_block_by_func(
+                self.on_interlude_slider_change)
 
-            self.interlude_slider.set_range(0, float(duration_nanosecs) / self.b.player.Gst.SECOND)
-            self.interlude_slider.set_value(float(nanosecs) / self.b.player.Gst.SECOND)
+            self.interlude_slider.set_range(
+                0, float(duration_nanosecs) / self.b.player.Gst.SECOND)
+            self.interlude_slider.set_value(
+                float(nanosecs) / self.b.player.Gst.SECOND)
 
-            self.interlude_slider.handler_unblock_by_func(self.on_interlude_slider_change)
+            self.interlude_slider.handler_unblock_by_func(
+                self.on_interlude_slider_change)
         except Exception as e:
             log.error("Exception while updating interlude_slider: {}".format(e))
             return False
@@ -692,7 +718,8 @@ class BlockifyUI(Gtk.Window):
             cover_file = os.path.join(util.THUMBNAIL_DIR, cover_hash + ".png")
 
             if not os.path.exists(cover_file):
-                log.debug("Downloading cover art for {0} ({1})".format(self.b.current_song, cover_hash))
+                log.debug("Downloading cover art for {0} ({1})".format(
+                    self.b.current_song, cover_hash))
                 urllib.request.urlretrieve(cover_url, cover_file)
 
         return cover_file
@@ -774,7 +801,8 @@ class BlockifyUI(Gtk.Window):
 
     def on_interlude_audio_changed(self, player):
         """Audio source for interlude music has changed."""
-        log.info("Interlude track changed to {}.".format(self.b.player.get_current_uri()))
+        log.info("Interlude track changed to {}.".format(
+            self.b.player.get_current_uri()))
         GObject.timeout_add(self.slider_update_interval, self.update_slider)
         uri = self.b.player.get_current_uri()
         if uri.startswith("file://"):
@@ -791,7 +819,8 @@ class BlockifyUI(Gtk.Window):
                 if len(label) > 5:
                     self.interlude_label.set_text(label)
             except KeyError as e:
-                log.debug("Exception when trying to set interlude label: {}.".format(e))
+                log.debug(
+                    "Exception when trying to set interlude label: {}.".format(e))
 
     def on_play_interlude_btn(self, widget):
         """Interlude play button."""
@@ -857,7 +886,8 @@ class BlockifyUI(Gtk.Window):
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             file_list = dialog.get_filenames()
-            self.b.player.load_playlist(self.b.player.parse_playlist(file_list))
+            self.b.player.load_playlist(
+                self.b.player.parse_playlist(file_list))
             self.on_play_interlude_btn(None)
 
         dialog.destroy()
